@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBeatMusic</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <span class="navbar-brand mb-0 h1">KBeatMusic</span>
+
+        <!-- Search Bar -->
+        <form class="form-inline">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-3">
+        <!-- Welcome Message -->
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to KBeatMusic!</h1>
+            <p class="lead">Discover the latest tracks and albums from your favorite artists.</p>
+            <hr class="my-4">
+            <p>Explore a world of music and stay tuned for the latest hits.</p>
+        </div>
+
+        <!-- Music Collection Section -->
+        <div id="musicCollection">
+        </div>
+
+        <!-- Right Side Window for Details -->
+        <div id="detailsContainer">
+        </div>
+    </div>
+
+    <!-- Description Panel -->
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-3">
+                <p>Explore</p>
+                <p>Discover new music and trending tracks.</p>
+            </div>
+            <div class="col-md-3">
+                <p>Details</p>
+                <p>Get detailed information about your favorite tracks and artists.</p>
+            </div>
+            <div class="col-md-3">
+                <p>Enjoy</p>
+                <p>Immerse yourself in a world of melodies and rhythms.</p>
+            </div>
+            <div class="col-md-3">
+                <p>Connect</p>
+                <p>Connect with the beats that resonate with your soul.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light text-center py-2 mt-5">
+        <p>
+            Follow us on:
+            <a href="https://www.facebook.com/" target="_blank" class="social-icon"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.instagram.com/" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.pinterest.com/" target="_blank" class="social-icon"><i class="fab fa-pinterest"></i></a>
+            <a href="https://www.linkedin.com/" target="_blank" class="social-icon"><i class="fab fa-linkedin"></i></a>
+        </p>
+        <p>&copy; 2024 KBeatMusic. All rights reserved.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const apiKey = '98bc84f81f927161abbf2ac81f2ad3fb';
+
+        async function fetchMusicData() {
+            try {
+                const response = await fetch(`https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${apiKey}&format=json`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+
+                return data.tracks.track;
+            } catch (error) {
+                console.error('Error fetching music data:', error);
+                return [];
+            }
+        }
+
+        async function displayTracks() {
+            addStyles();
+            const musicCollection = document.getElementById('musicCollection');
+            const tracks = await fetchMusicData();
+
+            tracks.forEach((track, index) => {
+                const trackCard = createTrackCard(track, index);
+                musicCollection.innerHTML += trackCard;
+            });
+        }
+
+        function createTrackCard(track, index) {
+            const card = document.createElement('div');
+            card.className = 'col-md-3 mb-4';
+            card.style.backgroundColor = '#deb887';
+            const backgroundImage = track.image[2] ? track.image[2]['#text'] : 'default_image_url.jpg';
+            card.innerHTML = `
+                <div class="card">
+                    <img src="${backgroundImage}" class="card-img-top" alt="${track.name} Poster">
+                    <div class="card-body" style="background-color: #deb887;">
+                        <h5 class="card-title" style="color: #6495ed;">${track.name}</h5>
+                        <p class="card-text" style="color: #00ffff;">Artist: ${track.artist.name}</p>
+                        <button class="btn btn-primary" onclick="showDetails('${track.name}', '${track.artist.name}')" style="color: #dc143c;">Details</button>
+                    </div>
+                </div>
+            `;
+            return card.outerHTML;
+        }
+
+        function addStyles() {
+            const musicCollection = document.getElementById('musicCollection');
+            const detailsContainer = document.getElementById('detailsContainer');
+
+            musicCollection.style.backgroundColor = '#696969';
+            musicCollection.style.display = 'flex';
+            musicCollection.style.flexWrap = 'wrap';
+            musicCollection.style.maxWidth = '75%';
+            musicCollection.style.float = 'left';
+
+            const cardTitles = document.getElementsByClassName('card-title');
+            for (let title of cardTitles) {
+                title.style.color = '#6495ed';
+            }
+
+            const cardTexts = document.getElementsByClassName('card-text');
+            for (let text of cardTexts) {
+                text.style.color = '#00ffff';
+            }
+
+            const cardBodies = document.getElementsByClassName('card-body');
+            for (let body of cardBodies) {
+                body.style.backgroundSize = 'cover';
+                body.style.backgroundPosition = 'center';
+            }
+
+            const primaryButtons = document.querySelectorAll('.btn-primary');
+            for (let button of primaryButtons) {
+                button.style.color = 'white';
+                button.style.backgroundColor = '#dc143c';
+            }
+
+            detailsContainer.style.backgroundColor = '#f0f0f0';
+            detailsContainer.style.padding = '20px';
+            detailsContainer.style.maxWidth = '25%';
+            detailsContainer.style.float = 'right';
+
+            const detailImages = detailsContainer.querySelectorAll('img');
+            for (let img of detailImages) {
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+            }
+        }
+
+        async function showDetails(trackName, artistName) {
+            const apiUrl = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&track=${encodeURIComponent(trackName)}&artist=${encodeURIComponent(artistName)}&format=json`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+
+                const detailsContainer = document.getElementById('detailsContainer');
+                detailsContainer.innerHTML = `
+                    <h2>${data.track.name}</h2>
+                    <p>Artist: ${data.track.artist.name}</p>
+                    <p>Duration: ${data.track.duration} seconds</p>
+                    <img src="${data.track.album.image[2]['#text']}" alt="Album Cover">
+                    <p>${data.track.wiki.summary}</p>
+                `;
+
+                detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (error) {
+                console.error('Error fetching track details:', error);
+            }
+        }
+
+        displayTracks();
+    </script>
+
+</body>
+
+</html>
